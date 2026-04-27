@@ -1,0 +1,64 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:creditlens}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+creditlens:
+  jwt-secret: ${JWT_SECRET:creditlens-secret-key-change-in-prod-must-be-at-least-256-bits!!}
+  jwt-expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+  openai-api-key: ${OPENAI_API_KEY:}
+  openai-model: ${OPENAI_MODEL:gpt-4}
+  openai-base-url: https://api.openai.com/v1
+
+  # Risk thresholds — override via environment variables to tune per-product
+  max-foir: ${MAX_FOIR:0.60}
+  max-ltv:  ${MAX_LTV:0.80}
+  max-dti:  ${MAX_DTI:0.55}
+  min-age:  ${MIN_AGE:21}
+  max-age:  ${MAX_AGE:65}
+  min-credit-score: ${MIN_CREDIT_SCORE:650}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.creditlens: INFO
+    org.hibernate.SQL: WARN

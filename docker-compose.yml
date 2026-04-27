@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+
+  # ── PostgreSQL ──────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: creditlens-postgres
+    environment:
+      POSTGRES_DB: creditlens
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── CreditLens App ──────────────────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: creditlens-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      # Database
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: creditlens
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+
+      # JWT — change in production: openssl rand -hex 32
+      JWT_SECRET: creditlens-super-secret-jwt-key-change-this-in-production-256bits
+
+      # OpenAI — leave blank to use rule-engine + template fallback (zero cost)
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: gpt-4
+
+      # Risk thresholds — override per loan product if needed
+      MAX_FOIR: 0.60
+      MAX_LTV: 0.80
+      MAX_DTI: 0.55
+      MIN_CREDIT_SCORE: 650
+      MIN_AGE: 21
+      MAX_AGE: 65
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

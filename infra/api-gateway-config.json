@@ -1,0 +1,30 @@
+{
+  "_comment": "AWS API Gateway HTTP API configuration for CreditLens — Lambda or ECS target",
+  "apiName": "creditlens-api",
+  "description": "CreditLens Loan Risk Assessment API",
+  "protocolType": "HTTP",
+  "corsConfiguration": {
+    "allowOrigins": ["*"],
+    "allowMethods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    "allowHeaders": ["Content-Type", "Authorization"],
+    "maxAge": 300
+  },
+  "routes": [
+    { "method": "POST", "path": "/api/auth/login",                "auth": "NONE"   },
+    { "method": "POST", "path": "/api/auth/register",             "auth": "NONE"   },
+    { "method": "POST", "path": "/api/assessments",               "auth": "JWT"    },
+    { "method": "GET",  "path": "/api/assessments/{id}",          "auth": "JWT"    },
+    { "method": "GET",  "path": "/api/assessments",               "auth": "JWT"    },
+    { "method": "GET",  "path": "/api/assessments/dashboard",     "auth": "JWT"    },
+    { "method": "GET",  "path": "/api/calculator/emi",            "auth": "JWT"    },
+    { "method": "GET",  "path": "/actuator/health",               "auth": "NONE"   }
+  ],
+  "throttling": {
+    "burstLimit": 100,
+    "rateLimit": 50
+  },
+  "stages": {
+    "prod": { "autoDeploy": true, "logLevel": "INFO" },
+    "dev":  { "autoDeploy": true, "logLevel": "ERROR" }
+  }
+}

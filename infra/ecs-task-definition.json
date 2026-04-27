@@ -1,0 +1,44 @@
+{
+  "family": "creditlens",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::111122223333:role/ecsTaskExecutionRole",
+  "taskRoleArn":      "arn:aws:iam::111122223333:role/creditlensTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "creditlens-app",
+      "image": "111122223333.dkr.ecr.ap-south-1.amazonaws.com/creditlens:latest",
+      "essential": true,
+      "portMappings": [{ "containerPort": 8080, "protocol": "tcp" }],
+      "environment": [
+        { "name": "OPENAI_MODEL",      "value": "gpt-4"  },
+        { "name": "MAX_FOIR",          "value": "0.60"   },
+        { "name": "MAX_LTV",           "value": "0.80"   },
+        { "name": "MIN_CREDIT_SCORE",  "value": "650"    }
+      ],
+      "secrets": [
+        { "name": "DB_HOST",       "valueFrom": "arn:aws:ssm:ap-south-1:111122223333:parameter/creditlens/DB_HOST" },
+        { "name": "DB_PASSWORD",   "valueFrom": "arn:aws:ssm:ap-south-1:111122223333:parameter/creditlens/DB_PASSWORD" },
+        { "name": "JWT_SECRET",    "valueFrom": "arn:aws:ssm:ap-south-1:111122223333:parameter/creditlens/JWT_SECRET" },
+        { "name": "OPENAI_API_KEY","valueFrom": "arn:aws:ssm:ap-south-1:111122223333:parameter/creditlens/OPENAI_API_KEY" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/creditlens",
+          "awslogs-region": "ap-south-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ]
+}
