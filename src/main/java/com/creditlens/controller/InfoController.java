@@ -20,19 +20,21 @@ public class InfoController {
 
     @GetMapping("/info")
     public ResponseEntity<Map<String, Object>> info() {
+        Map<String, Object> thresholds = new LinkedHashMap<>();
+        thresholds.put("maxFoir",        props.getMaxFoir());
+        thresholds.put("maxLtv",         props.getMaxLtv());
+        thresholds.put("maxDti",         props.getMaxDti());
+        thresholds.put("minCreditScore", props.getMinCreditScore());
+        thresholds.put("minAge",         props.getMinAge());
+        thresholds.put("maxAge",         props.getMaxAge());
+
         Map<String, Object> m = new LinkedHashMap<>();
-        m.put("app",       "CreditLens");
-        m.put("version",   "1.0.0");
-        m.put("aiEnabled", props.getOpenaiApiKey() != null && !props.getOpenaiApiKey().trim().isEmpty());
-        m.put("riskThresholds", Map.of(
-                "maxFoir",       props.getMaxFoir(),
-                "maxLtv",        props.getMaxLtv(),
-                "maxDti",        props.getMaxDti(),
-                "minCreditScore",props.getMinCreditScore(),
-                "minAge",        props.getMinAge(),
-                "maxAge",        props.getMaxAge()
-        ));
-        m.put("timestamp", Instant.now());
+        m.put("app",            "CreditLens");
+        m.put("version",        "1.0.0");
+        m.put("aiEnabled",      props.getOpenaiApiKey() != null
+                                && !props.getOpenaiApiKey().trim().isEmpty());
+        m.put("riskThresholds", thresholds);
+        m.put("timestamp",      Instant.now());
         return ResponseEntity.ok(m);
     }
 }
